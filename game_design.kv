@@ -1,0 +1,328 @@
+#:kivy 2.3.1
+
+ScreenManager:
+    MenuScreen:
+        name: "menu"
+    ModeSelectScreen:
+        name: "mode_select"
+    GameScreen:
+        name: "game"
+    ResultsScreen:
+        name: "results"
+    ShopScreen:
+        name: "shop"
+    StatsScreen:
+        name: "stats"
+    DailyRewardsScreen:
+        name: "daily_rewards"
+
+<MenuScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 15
+        spacing: 15
+
+        Label:
+            text: root.display_high_score
+            font_size: '32sp'
+            bold: True
+
+        Label:
+            text: root.display_coins
+            font_size: '26sp'
+            color: 1, 1, 0, 1
+
+        Label:
+            text: root.daily_indicator
+            color: 0, 1, 0, 1
+            font_size: '20sp'
+
+        Button:
+            text: "START GAME"
+            font_size: '30sp'
+            size_hint_y: None
+            height: '70dp'
+            on_release: app.root.current = "mode_select"
+
+        Button:
+            text: "Daily Rewards"
+            font_size: '24sp'
+            size_hint_y: None
+            height: '60dp'
+            on_release: root.go_to_daily_rewards()
+
+        Button:
+            text: "Shop"
+            font_size: '24sp'
+            size_hint_y: None
+            height: '60dp'
+            on_release: app.root.current = "shop"
+
+        Button:
+            text: "Stats"
+            font_size: '24sp'
+            size_hint_y: None
+            height: '60dp'
+            on_release: app.root.current = "stats"
+
+        Label:
+            text: root.display_achievements
+            markup: True
+            font_size: '18sp'
+            halign: "center"
+
+        Button:
+            text: "Exit"
+            size_hint_y: None
+            height: '50dp'
+            on_release: app.stop()
+
+<ModeSelectScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 20
+        spacing: 20
+
+        Label:
+            text: "SELECT MODE"
+            font_size: "35sp"
+
+        Button:
+            text: "Classic Mode"
+            font_size: "24sp"
+            on_release:
+                root.manager.get_screen('game').set_mode('classic')
+                root.manager.current = 'game'
+        Button:
+            text: "Survival Mode"
+            font_size: "24sp"
+            on_release:
+                root.manager.get_screen('game').set_mode('survival')
+                root.manager.current = 'game'
+        Button:
+            text: "Accuracy Mode"
+            font_size: "24sp"
+            on_release:
+                root.manager.get_screen('game').set_mode('accuracy')
+                root.manager.current = 'game'
+        Button:
+            text: "Reaction Mode"
+            font_size: "24sp"
+            on_release:
+                root.manager.get_screen('game').set_mode('reaction')
+                root.manager.current = 'game'
+
+        Button:
+            text: "Back"
+            on_release: app.root.current = "menu"
+
+<GameScreen>:
+    tap_button: tap_button
+    BoxLayout:
+        orientation: "vertical"
+        padding: 20
+        spacing: 20
+
+        Label:
+            id: timer_label
+            text: "Time: 0"
+            font_size: '26sp'
+            bold: True
+            color: 1,1,1,1
+
+        Label:
+            text: "Score: " + str(root.display_clicks)
+            font_size: '26sp'
+
+        Label:
+            text: root.display_mode_title
+            font_size: '24sp'
+
+        Button:
+            id: tap_button
+            text: "START GAME"
+            font_size: '34sp'
+            background_color: 0.2, 0.6, 1, 1
+
+        Button:
+            id: foe_button
+            text: "DON'T TAP"
+            background_color: 1, 0, 0, 1
+            opacity: 0
+            disabled: True
+            on_release: root.on_wrong_tap(self)
+
+        Button:
+            id: power_button
+            text: "+TIME"
+            background_color: 0, 1, 0, 1
+            opacity: 0
+            disabled: True
+            on_release: root.on_powerup_tap(self)
+
+        Button:
+            text: "Back"
+            on_release: app.root.current = "menu"
+
+<ResultsScreen>:
+    BoxLayout:
+        padding: 20
+        orientation: "vertical"
+        spacing: 20
+
+        Label:
+            text: root.display_message
+            font_size: '30sp'
+            bold: True
+
+        Label:
+            text: root.display_final_score
+            font_size: '26sp'
+
+        Label:
+            text: root.display_coins_gained
+            font_size: '26sp'
+            color: 1, 1, 0, 1
+
+        Button:
+            text: "Play Again"
+            on_release: app.root.current = "mode_select"
+
+        Button:
+            text: "Back to Menu"
+            on_release: app.root.current = "menu"
+
+<ShopScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 15
+        spacing: 10
+
+        Label:
+            id: coins_label
+            text: "Your Coins: 0"
+            font_size: '28sp'
+            color: 1,1,0,1
+
+        ScrollView:
+            GridLayout:
+                id: shop_container
+                cols: 1
+                spacing: 10
+                size_hint_y: None
+                height: self.minimum_height
+
+        Label:
+            id: status_label
+            text: ""
+            font_size: '18sp'
+            color: 0,1,0,1
+
+        Button:
+            text: "Back"
+            size_hint_y: None
+            height: '60dp'
+            on_release: app.root.current = "menu"
+
+<ShopItem>:
+    orientation: "vertical"
+    size_hint_y: None
+    height: '110dp'
+    padding: 5
+    canvas.before:
+        Color:
+            rgba: root.item_color
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+
+    Label:
+        text: root.item_name
+        font_size: '20sp'
+        bold: True
+
+    Label:
+        text: "Price: " + str(root.item_price)
+        font_size: '18sp'
+
+    Button:
+        text: root.display_status
+        font_size: '20sp'
+        on_release: root.on_press_action()
+
+<StatsScreen>:
+    BoxLayout:
+        orientation:"vertical"
+        padding: 20
+        spacing: 10
+
+        Label:
+            text:"GAME STATS"
+            font_size:"32sp"
+
+        Label:
+            text:"Total Clicks: " + str(root.total_clicks)
+            font_size:"22sp"
+        Label:
+            text:"Total Wrong Taps: " + str(root.total_wrong_taps)
+            font_size:"22sp"
+        Label:
+            text:"Games Played: " + str(root.total_games_played)
+            font_size:"22sp"
+        Label:
+            text:"Survival Best Time: " + root.survival_high_time
+            font_size:"22sp"
+        Label:
+            text:"Accuracy Best: " + str(root.accuracy_high_score)
+            font_size:"22sp"
+        Label:
+            text:"Reaction Best: " + str(root.reaction_high_score)
+            font_size:"22sp"
+
+        Button:
+            text:"Back"
+            on_release: app.root.current = "menu"
+
+<DailyRewardsScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 20
+        spacing: 15
+
+        Label:
+            text: root.title_text
+            font_size: "35sp"
+            bold: True
+
+        Label:
+            text: root.streak_text
+            font_size: "24sp"
+            color: 1,1,0,1
+
+        Label:
+            text: root.today_reward_text
+            font_size: "22sp"
+            color: 0,1,0,1
+
+        ScrollView:
+            size_hint_y: 0.5
+            do_scroll_x: False
+            do_scroll_y: True
+
+            Label:
+                text: root.rewards_preview
+                font_size: "20sp"
+                halign: "left"
+                valign: "top"
+                text_size: self.width, None
+
+        Button:
+            text: root.collect_message
+            font_size: "24sp"
+            disabled: not root.collect_enabled
+            on_release: root.collect_reward()
+
+        Button:
+            text: "Back"
+            font_size: "24sp"
+            on_release: app.root.current = "menu"
