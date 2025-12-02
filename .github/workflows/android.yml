@@ -1,4 +1,4 @@
-name: Build APK for Click Master
+name: Build AAB for Click Master
 
 on:
   workflow_dispatch:
@@ -18,34 +18,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3 python3-pip openjdk-17-jdk git zip unzip adb wget
-
-      - name: Install buildozer and cython
-        run: |
+          sudo apt install -y python3 python3-pip openjdk-17-jdk git unzip zip wget
           python3 -m pip install --upgrade pip
           pip install cython==0.29.36 buildozer==1.5.0
 
-      - name: Build first pass
+      - name: Initial build bootstrap
         run: |
           buildozer android debug || true
 
-      - name: Accept Android licenses
+      - name: Setup Android SDK + NDK
         run: |
-          yes | $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager --licenses || true
+          SDK=$HOME/.buildozer/android/platform/android-sdk
+          mkdir -p $SDK/cmdline-tools
+          cd $SDK/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
+          unzip cmdtools.zip -d latest
+          yes | $SDK/cmdline-tools/latest/bin/sdkmanager --sdk_root=$SDK --licenses
+          yes | $SDK/cmdline-tools/latest/bin/sdkmanager --sdk_root=$SDK \
+             "platform-tools" \
+             "platforms;android-${ANDROID_API_LEVEL}" \
+             "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
+             "ndk;23.1.7779620"
 
-      - name: Install Android SDK components
+      - name: Build Release AAB
         run: |
-          $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager --install \
-          "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
-          "platforms;android-${ANDROID_API_LEVEL}" \
-          "ndk;23.1.7779620"
+          buildozer android release aab
 
-      - name: Build release APK
-        run: |
-          buildozer android release
-
-      - name: List built files
+      - name: List output files
         run: ls -la bin
