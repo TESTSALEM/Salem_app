@@ -1,0 +1,51 @@
+name: Build APK for Click Master
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+env:
+  ANDROID_BUILD_TOOLS_VERSION: "33.0.2"
+  ANDROID_API_LEVEL: "33"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3 python3-pip openjdk-17-jdk git zip unzip adb wget
+
+      - name: Install buildozer and cython
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install cython==0.29.36 buildozer==1.5.0
+
+      - name: Build first pass
+        run: |
+          buildozer android debug || true
+
+      - name: Accept Android licenses
+        run: |
+          yes | $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager --licenses || true
+
+      - name: Install Android SDK components
+        run: |
+          $HOME/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager --install \
+          "build-tools;${ANDROID_BUILD_TOOLS_VERSION}" \
+          "platforms;android-${ANDROID_API_LEVEL}" \
+          "ndk;23.1.7779620"
+
+      - name: Build release APK
+        run: |
+          buildozer android release
+
+      - name: List built files
+        run: ls -la bin
